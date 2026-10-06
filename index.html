@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f7f2">
+  <title>Frete Moto | Estimativa</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #202820;
+      background: #f5f7f2;
+      font-synthesis: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(100%, 460px);
+      padding: 32px;
+      background: #fff;
+      border: 1px solid #e5eae1;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgb(34 54 34 / 8%);
+    }
+
+    .icon {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 20px;
+      place-items: center;
+      border-radius: 14px;
+      background: #e8f5e9;
+      font-size: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .intro {
+      margin: 0 0 24px;
+      color: #667066;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 13px;
+      border: 1px solid #d9e0d7;
+      border-radius: 10px;
+      background: #fff;
+      color: inherit;
+      font: inherit;
+    }
+
+    input:focus {
+      border-color: #27853b;
+      outline: 3px solid rgb(39 133 59 / 14%);
+    }
+
+    button {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 22px;
+      border: 0;
+      border-radius: 10px;
+      background: #218838;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    button:hover:not(:disabled) {
+      background: #196c2c;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.7;
+    }
+
+    .note {
+      margin: 15px 0 0;
+      color: #747d73;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .message {
+      margin-top: 18px;
+      color: #9a351f;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .result {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 14px;
+      background: #f1f8f0;
+    }
+
+    .result[hidden] {
+      display: none;
+    }
+
+    .address {
+      margin: 0 0 16px;
+      color: #596459;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .fare-label {
+      margin: 0;
+      color: #596459;
+      font-size: 14px;
+    }
+
+    .fare {
+      margin: 4px 0 14px;
+      color: #176b2b;
+      font-size: 36px;
+      font-weight: 700;
+    }
+
+    .details {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #dce9da;
+      font-size: 14px;
+    }
+
+    .details strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    footer {
+      margin-top: 20px;
+      color: #7a8279;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    footer a {
+      color: inherit;
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="icon" aria-hidden="true">🏍️</div>
+    <h1>Frete de moto</h1>
+    <p class="intro">Informe o CEP de destino para consultar a distância e estimar o valor do frete.</p>
+
+    <form id="quote-form">
+      <label for="cep">CEP de destino</label>
+      <input id="cep" name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="Ex.: 50030-230" maxlength="9" required>
+
+      <label for="origin">Saída da Uninassau</label>
+      <input id="origin" name="origin" value="Rua Germano Franck, 613, Parangaba, Fortaleza - CE, 60740-020">
+      <button id="submit-button" type="submit">Consultar CEP e calcular</button>
+    </form>
+
+    <p class="note">A tarifa é uma simulação simples baseada na distância e duração da rota. Não é um preço oficial do Uber.</p>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+
+    <section id="result" class="result" aria-live="polite" hidden>
+      <p id="address" class="address"></p>
+      <p class="fare-label">Estimativa do frete</p>
+      <p id="fare" class="fare"></p>
+      <div class="details">
+        <div>Distância<strong id="distance"></strong></div>
+        <div>Tempo estimado<strong id="duration"></strong></div>
+      </div>
+    </section>
+
+    <footer>
+      CEP: <a href="https://viacep.com.br/" target="_blank" rel="noreferrer">ViaCEP</a>.
+      Geocodificação: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>.
+      Rotas: <a href="https://project-osrm.org/" target="_blank" rel="noreferrer">OSRM</a>.
+    </footer>
+  </main>
+
+  <script>
+    const form = document.querySelector("#quote-form");
+    const cepInput = document.querySelector("#cep");
+    const originInput = document.querySelector("#origin");
+    const submitButton = document.querySelector("#submit-button");
+    const message = document.querySelector("#message");
+    const result = document.querySelector("#result");
+
+    const money = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Não foi possível consultar um dos serviços. Tente novamente.");
+      }
+      return response.json();
+    }
+
+    async function geocode(query) {
+      const params = new URLSearchParams({
+        q: query,
+        format: "jsonv2",
+        limit: "1",
+        countrycodes: "br"
+      });
+      const locations = await fetchJson(`https://nominatim.openstreetmap.org/search?${params}`);
+      if (!locations.length) {
+        throw new Error("Não foi possível localizar o endereço. Confira o CEP e o endereço de saída.");
+      }
+      return {
+        longitude: Number(locations[0].lon),
+        latitude: Number(locations[0].lat)
+      };
+    }
+
+    function formatDuration(seconds) {
+      const totalMinutes = Math.round(seconds / 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return hours ? `${hours} h ${minutes} min` : `${minutes} min`;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const cep = cepInput.value.replace(/\D/g, "");
+
+      if (cep.length !== 8) {
+        message.textContent = "Digite um CEP válido com 8 números.";
+        result.hidden = true;
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Calculando...";
+      message.textContent = "Consultando CEP e calculando a rota...";
+      result.hidden = true;
+
+      try {
+        const destination = await fetchJson(`https://viacep.com.br/ws/${cep}/json/`);
+        if (destination.erro) {
+          throw new Error("CEP não encontrado. Confira os números e tente novamente.");
+        }
+
+        const destinationAddress = [
+          destination.logradouro,
+          destination.bairro,
+          destination.localidade,
+          destination.uf,
+          "Brasil"
+        ].filter(Boolean).join(", ");
+
+        if (!destination.localidade || !destination.uf) {
+          throw new Error("O CEP não retornou uma cidade válida para calcular a rota.");
+        }
+
+        const originQuery = `${originInput.value.trim()}, Brasil`;
+        if (originQuery === ", Brasil") {
+          throw new Error("Informe o endereço de saída da Uninassau.");
+        }
+
+        const destinationQuery = destinationAddress || `${cep}, Brasil`;
+        const [origin, target] = await Promise.all([
+          geocode(originQuery),
+          geocode(destinationQuery)
+        ]);
+
+        const coordinates = `${origin.longitude},${origin.latitude};${target.longitude},${target.latitude}`;
+        const route = await fetchJson(`https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=false`);
+        if (route.code !== "Ok" || !route.routes?.length) {
+          throw new Error("Não foi possível encontrar uma rota entre os endereços informados.");
+        }
+
+        const { distance, duration } = route.routes[0];
+        const distanceKm = distance / 1000;
+        const durationMinutes = duration / 60;
+        const estimatedFare = 4 + (distanceKm * 1.25) + (durationMinutes * 0.2);
+
+        document.querySelector("#address").textContent = destinationAddress || `CEP ${cep}`;
+        document.querySelector("#fare").textContent = money.format(estimatedFare);
+        document.querySelector("#distance").textContent = `${distanceKm.toFixed(1).replace(".", ",")} km`;
+        document.querySelector("#duration").textContent = formatDuration(duration);
+        result.hidden = false;
+        message.textContent = "";
+      } catch (error) {
+        message.textContent = error instanceof TypeError
+          ? "Falha ao acessar os serviços. Verifique sua conexão e tente novamente."
+          : error.message;
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Consultar CEP e calcular";
+      }
+    });
+
+    cepInput.addEventListener("input", () => {
+      const digits = cepInput.value.replace(/\D/g, "").slice(0, 8);
+      cepInput.value = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+    });
+  </script>
+</body>
+</html>
